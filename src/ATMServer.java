@@ -1,11 +1,16 @@
-// ATMServer.java
+//Multi-threaded ATM Server Application
+//Handles concurrent client connections and banking operations
+
 import java.net.*;
 import java.io.*;
 import java.util.*;
 
 public class ATMServer {
+
+    //In-memory database using Map<Pin, Customer>
     static final Map<String, Customer> customers = new HashMap<>();
 
+    //Static initialization of sample customers
     static {
         customers.put("1234", new Customer("1234", "1111222233334444",
                 5000.0, "Alice"));
@@ -20,16 +25,18 @@ public class ATMServer {
     }
 
     public static void main(String[] args) {
+        //Added ShutdownHook for clean termination
         Runtime.getRuntime().addShutdownHook(new Thread(() ->
                 System.out.println("\n[Server shutting down...]")));
 
         try (ServerSocket serverSocket = new ServerSocket(12345)) {
             System.out.println("ATM Server started on port 12345...");
-
+        //Main server loop accepting connections
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("\nNew client connected: " + clientSocket.getInetAddress());
                 new Thread(new ClientHandler(clientSocket)).start();
+                //New thread for every client
             }
         } catch (IOException e) {
             System.err.println("Server error: " + e.getMessage());
@@ -37,14 +44,18 @@ public class ATMServer {
     }
 }
 
+
+//CLientHandler class
+//Handles individual connections
 class ClientHandler implements Runnable {
     private final Socket clientSocket;
-    private Customer currentCustomer;
+    private Customer currentCustomer; //User currently authenticated
 
     public ClientHandler(Socket socket) {
         this.clientSocket = socket;
     }
 
+    //Main client processing unit
     public void run() {
         try (PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
@@ -53,39 +64,53 @@ class ClientHandler implements Runnable {
 
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
-                System.out.println("Received from " + clientSocket.getInetAddress() + ": " + inputLine);
-
+                System.out.println("Received from " + clientSocket.getInetAddress()
+                        + ": " + inputLine);
+                //Routing logic commands
                 if ("START".equalsIgnoreCase(inputLine)) {
                     out.println("OK Please authenticate using AUTH <4-digit PIN>");
-                } else if (inputLine.toUpperCase().startsWith("AUTH ")) {
+                }
+                else if (inputLine.toUpperCase().startsWith("AUTH ")) {
                     handleAuth(inputLine, out);
-                } else if ("BALANCE".equalsIgnoreCase(inputLine)) {
+                }
+                else if ("BALANCE".equalsIgnoreCase(inputLine)) {
                     handleBalance(out);
-                } else if (inputLine.toUpperCase().startsWith("DEBIT ")) {
+                }
+                else if (inputLine.toUpperCase().startsWith("DEBIT "))
+                {
                     handleDebit(inputLine, out);
-                } else if (inputLine.toUpperCase().startsWith("CREDIT ")) {
+                }
+                else if (inputLine.toUpperCase().startsWith("CREDIT "))
+                {
                     handleCredit(inputLine, out);
-                } else if ("LOGOUT".equalsIgnoreCase(inputLine)) {
+                }
+                else if ("LOGOUT".equalsIgnoreCase(inputLine)) {
                     handleLogout(out);
-                } else if ("CLOSE".equalsIgnoreCase(inputLine)) {
+                }
+                else if ("CLOSE".equalsIgnoreCase(inputLine)) {
                     out.println("OK Connection closed");
                     break;
-                } else {
+                }
+                else {
                     out.println("NOTOK Invalid command");
                 }
             }
+
         } catch (IOException e) {
             System.err.println("Client handler error: " + e.getMessage());
         } finally {
+            //Cleanup and connection closure
             try {
                 clientSocket.close();
                 System.out.println("Client disconnected: " + clientSocket.getInetAddress());
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 System.err.println("Error closing socket: " + e.getMessage());
             }
         }
     }
 
+    //Authentication handling method
     private void handleAuth(String command, PrintWriter out) {
         String pin = command.substring(5).trim();
 
@@ -103,6 +128,7 @@ class ClientHandler implements Runnable {
         }
     }
 
+    //Balance handling method
     private void handleBalance(PrintWriter out) {
         if (currentCustomer == null) {
             out.println("NOTOK Please authenticate first");
@@ -115,6 +141,7 @@ class ClientHandler implements Runnable {
         out.println(response);
     }
 
+    //Debit handling method
     private void handleDebit(String command, PrintWriter out) {
         if (currentCustomer == null) {
             out.println("NOTOK Please authenticate first");
@@ -138,6 +165,7 @@ class ClientHandler implements Runnable {
         }
     }
 
+    //Credit handling method
     private void handleCredit(String command, PrintWriter out) {
         if (currentCustomer == null) {
             out.println("NOTOK Please authenticate first");
@@ -159,6 +187,7 @@ class ClientHandler implements Runnable {
         }
     }
 
+    //Logout handling method
     private void handleLogout(PrintWriter out) {
         if (currentCustomer != null) {
             out.println("OK Logged out. Please authenticate again.");
@@ -170,10 +199,12 @@ class ClientHandler implements Runnable {
     }
 }
 
+//Customer class/model - representing customer data
+//Utilizing synchronized methods for thread safety in balance updates
 class Customer {
     private final String pin;
     private final String accountNumber;
-    private double balance;
+    private double balance; //mutable balance field
     private final String name;
 
     public Customer(String pin, String accountNumber, double balance, String name) {
@@ -186,6 +217,7 @@ class Customer {
     public double getBalance() { return balance; }
     public String getName() { return name; }
 
+    //synchronized methods
     public synchronized void debit(double amount) { balance -= amount; }
     public synchronized void credit(double amount) { balance += amount; }
 }

@@ -1,27 +1,31 @@
-// ATMClient.java
+// ATMClient.java application using TCP sockets
+// Handles user interaction and communicates with ATM Server
 import java.net.*;
 import java.io.*;
 import java.util.*;
 
 public class ATMClient {
+
+    //ANSI color codes for console output (I thought It neat)
     public static final String GREEN = "\u001B[32m";
     public static final String RED = "\u001B[31m";
     public static final String RESET = "\u001B[0m";
 
     public static void main(String[] args) {
+        //Establishing server connection using "try-with-resources"
         try (Socket socket = new Socket("localhost", 12345);
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              Scanner scanner = new Scanner(System.in)) {
 
             System.out.println("Connected to ATM Server");
-            System.out.println(in.readLine()); // Welcome message
+            System.out.println(in.readLine()); //Welcome message
 
-            // START command
+            //START command
             out.println("START");
             System.out.println("Server: " + in.readLine());
 
-            // Authentication loop
+            //Authentication loop - 3 attempts allowed
             boolean authenticated = false;
             int attempts = 0;
             while (!authenticated && attempts < 3) {
@@ -51,8 +55,9 @@ public class ATMClient {
                 }
             }
 
-            // Main command loop
+            //Main command loop
             while (true) {
+                //Display menu of commands
                 System.out.println("\nAvailable commands:");
                 System.out.println("1. BALANCE");
                 System.out.println("2. DEBIT");
@@ -62,6 +67,7 @@ public class ATMClient {
                 System.out.print("Enter command number or name: ");
                 String input = scanner.nextLine().trim().toUpperCase();
 
+                //Processing user command selection
                 String command;
                 switch (input) {
                     case "1", "BALANCE" -> command = "BALANCE";
@@ -86,14 +92,16 @@ public class ATMClient {
                     }
                 }
 
+                //Receive response
                 out.println(command);
                 String response = in.readLine();
                 if (response == null) break;
                 System.out.println((response.startsWith("OK") ? GREEN : RED) + "Server: " + response + RESET);
 
+                //Logout handling
                 if (command.equals("LOGOUT")) {
                     authenticated = false;
-                    // Re-authentication
+                    //Logic for re-authentication
                     attempts = 0;
                     while (!authenticated) {
                         System.out.print("Enter your 4-digit PIN (or 'CLOSE' to quit): ");
