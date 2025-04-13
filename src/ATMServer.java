@@ -1,7 +1,33 @@
 import java.net.*;
 import java.io.*;
+import java.util.Map;
 
+class Customer {
+    private String pin;
+    private String accountNumber;
+    private double balance;
+    private String name;
+
+    public Customer(String pin, String accountNumber, double balance, String name) {
+        this.pin = pin;
+        this.accountNumber = accountNumber;
+        this.balance = balance;
+        this.name = name;
+    }
+
+    // Getters
+    public String getPin() { return pin; }
+    public String getAccountNumber() { return accountNumber; }
+    public double getBalance() { return balance; }
+    public String getName() { return name; }
+}
 public class ATMServer {
+
+    private static final Map<String, Customer> customers = Map.of(
+            "1234", new Customer("1234", "1111222233334444", 5000.0, "Alice"),
+            "5678", new Customer("5678", "5555666677778888", 3000.0, "Bob"),
+            "9012", new Customer("9012", "9999000011112222", 10000.0, "Charlie")
+    );
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = null;
         try {
@@ -26,6 +52,7 @@ public class ATMServer {
 
 class ClientHandler implements Runnable {
     private Socket clientSocket;
+    private Customer currentCustomer;
 
     public ClientHandler(Socket socket) {
         this.clientSocket = socket;
