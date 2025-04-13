@@ -12,15 +12,15 @@ public class ATMServer {
 
     //Static initialization of sample customers
     static {
-        customers.put("1234", new Customer("1234", "1111222233334444",
+        customers.put("1234", new Customer("1234", "1235222231334444",
                 5000.0, "Alice"));
-        customers.put("5678", new Customer("5678", "5555666677778888",
+        customers.put("5678", new Customer("5678", "5555126667871888",
                 3000.0, "Bob"));
-        customers.put("9012", new Customer("9012", "9999000011112222",
+        customers.put("9012", new Customer("9012", "9919040071112262",
                 10000.0, "Charlie"));
-        customers.put("3456", new Customer("3456", "3333444455556666",
+        customers.put("3456", new Customer("3456", "3313444251553166",
                 7500.0, "Diana"));
-        customers.put("7890", new Customer("7890", "7777888899990000",
+        customers.put("7890", new Customer("7890", "7512625161991250",
                 2000.0, "Eve"));
     }
 
