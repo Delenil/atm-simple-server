@@ -40,7 +40,8 @@ public class ATMClient {
 
                 out.println("AUTH " + input);
                 String response = in.readLine();
-                System.out.println((response.startsWith("OK") ? GREEN : RED) + "Server: " + response + RESET);
+                System.out.println((response.startsWith("OK") ? GREEN : RED) +
+                        "Server: " + response + RESET); //Color-coding
 
                 if (response.startsWith("OK Welcome")) {
                     authenticated = true;
@@ -69,7 +70,7 @@ public class ATMClient {
 
                 //Processing user command selection
                 String command;
-                switch (input) {
+                switch (input) { //Enhanced switch
                     case "1", "BALANCE" -> command = "BALANCE";
                     case "2", "DEBIT" -> {
                         System.out.print("Enter amount to debit: ");
@@ -121,7 +122,7 @@ public class ATMClient {
                             authenticated = true;
                         } else {
                             attempts++;
-                            if (attempts >= 3) {
+                            if (attempts >= 3) { //Check for failed attempts
                                 System.out.println(RED + "Too many failed attempts. Closing connection." + RESET);
                                 out.println("CLOSE");
                                 System.out.println("Server: " + in.readLine());

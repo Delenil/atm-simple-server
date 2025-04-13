@@ -114,7 +114,7 @@ class ClientHandler implements Runnable {
     private void handleAuth(String command, PrintWriter out) {
         String pin = command.substring(5).trim();
 
-        if (!pin.matches("\\d{4}")) {
+        if (!pin.matches("\\d{4}")) { //regex to match 4 digits
             out.println("NOTOK PIN must be 4 digits");
             return;
         }
